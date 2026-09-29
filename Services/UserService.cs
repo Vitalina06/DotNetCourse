@@ -35,8 +35,8 @@ namespace UserAuthApp.Services
             var user = new User();
             user.Login = login;
             user.PasswordHash = HashPassword(password);
-            user.CreatedDate = DateTime.Now;
-            user.UpdatedDate = DateTime.Now;
+            user.CreatedDate = DateTime.UtcNow;
+            user.UpdatedDate = DateTime.UtcNow;
 
             repository.Add(user);
 
@@ -84,7 +84,7 @@ namespace UserAuthApp.Services
                 user.PasswordHash = HashPassword(newPassword);
             }
 
-            user.UpdatedDate = DateTime.Now;
+            user.UpdatedDate = DateTime.UtcNow;
             repository.Update(user);
 
             return null;

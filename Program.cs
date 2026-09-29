@@ -1,5 +1,7 @@
 ﻿using System;
+using Microsoft.EntityFrameworkCore;
 using UserAuthApp.Controllers;
+using UserAuthApp.Data;
 
 namespace UserAuthApp
 {
@@ -7,6 +9,10 @@ namespace UserAuthApp
     {
         static void Main(string[] args)
         {
+             using (var context = new AppDbContext())
+            {
+                context.Database.Migrate();
+            }
             var controller = new UserController();
             var exit = false;
 
