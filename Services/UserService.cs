@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Serilog;
 using UserAuthApp.Data;
 using UserAuthApp.Models;
 
@@ -17,48 +18,100 @@ namespace UserAuthApp.Services
             var error = ValidateLogin(login);
             if (error != null)
             {
+                Log.Warning("Регистрация не удалась: {Error}. Логин: {Login}", error, login);
                 return error;
             }
 
             error = ValidatePassword(password);
             if (error != null)
             {
+                Log.Warning("Регистрация не удалась: {Error}. Логин: {Login}", error, login);
                 return error;
             }
 
-            var existingUser = repository.GetByLogin(login);
+            User existingUser;
+            try
+            {
+                existingUser = repository.GetByLogin(login);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Ошибка при обращении к базе данных при регистрации пользователя {Login}", login);
+                return "Произошла ошибка. Попробуйте позже.";
+            }
+
             if (existingUser != null)
             {
+                Log.Warning("Попытка регистрации с уже существующим логином: {Login}", login);
                 return "Пользователь с таким логином уже существует.";
             }
 
             var user = new User();
             user.Login = login;
             user.PasswordHash = HashPassword(password);
-            user.CreatedDate = DateTime.UtcNow;
-            user.UpdatedDate = DateTime.UtcNow;
+            user.CreatedDate = DateTime.Now;
+            user.UpdatedDate = DateTime.Now;
 
-            repository.Add(user);
+            try
+            {
+                repository.Add(user);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Ошибка при сохранении нового пользователя {Login}", login);
+                return "Произошла ошибка. Попробуйте позже.";
+            }
 
-            return null; // null значит что все прошло без ошибок
+            Log.Information("Зарегистрирован новый пользователь: {Login}", login);
+
+            return null;
         }
 
         public bool Login(string login, string password)
         {
-            var user = repository.GetByLogin(login);
-            if (user == null)
+            User user;
+            try
             {
+                user = repository.GetByLogin(login);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Ошибка при обращении к базе данных при авторизации {Login}", login);
                 return false;
             }
 
-            return user.PasswordHash == HashPassword(password);
+            if (user == null)
+            {
+                Log.Warning("Попытка авторизации с несуществующим логином: {Login}", login);
+                return false;
+            }
+
+            if (user.PasswordHash != HashPassword(password))
+            {
+                Log.Warning("Неверный пароль при авторизации пользователя: {Login}", login);
+                return false;
+            }
+
+            Log.Information("Пользователь авторизован: {Login}", login);
+            return true;
         }
 
         public string Edit(string login, string newLogin, string newPassword)
         {
-            var user = repository.GetByLogin(login);
+            User user;
+            try
+            {
+                user = repository.GetByLogin(login);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Ошибка при обращении к базе данных при редактировании {Login}", login);
+                return "Произошла ошибка. Попробуйте позже.";
+            }
+
             if (user == null)
             {
+                Log.Warning("Попытка редактирования несуществующего пользователя: {Login}", login);
                 return "Пользователь не найден.";
             }
 
@@ -67,6 +120,7 @@ namespace UserAuthApp.Services
                 var error = ValidateLogin(newLogin);
                 if (error != null)
                 {
+                    Log.Warning("Редактирование не удалось: {Error}. Логин: {Login}", error, login);
                     return error;
                 }
 
@@ -78,38 +132,91 @@ namespace UserAuthApp.Services
                 var error = ValidatePassword(newPassword);
                 if (error != null)
                 {
+                    Log.Warning("Редактирование не удалось: {Error}. Логин: {Login}", error, login);
                     return error;
                 }
 
                 user.PasswordHash = HashPassword(newPassword);
             }
 
-            user.UpdatedDate = DateTime.UtcNow;
-            repository.Update(user);
+            user.UpdatedDate = DateTime.Now;
+
+            try
+            {
+                repository.Update(user);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Ошибка при сохранении изменений пользователя {Login}", login);
+                return "Произошла ошибка. Попробуйте позже.";
+            }
+
+            Log.Information("Данные пользователя обновлены: {Login}", login);
 
             return null;
         }
 
         public string Delete(string login)
         {
-            var user = repository.GetByLogin(login);
+            User user;
+            try
+            {
+                user = repository.GetByLogin(login);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Ошибка при обращении к базе данных при удалении {Login}", login);
+                return "Произошла ошибка. Попробуйте позже.";
+            }
+
             if (user == null)
             {
+                Log.Warning("Попытка удаления несуществующего пользователя: {Login}", login);
                 return "Пользователь не найден.";
             }
 
-            repository.Delete(user.Id);
+            try
+            {
+                repository.Delete(user.Id);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Ошибка при удалении пользователя {Login}", login);
+                return "Произошла ошибка. Попробуйте позже.";
+            }
+
+            Log.Information("Пользователь удалён: {Login}", login);
+
             return null;
         }
 
         public List<User> GetAll()
         {
-            return repository.GetAll();
+            try
+            {
+                return repository.GetAll();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Ошибка при получении списка пользователей");
+                return new List<User>();
+            }
         }
 
         public string GetUsersJson(DateTime from, DateTime to)
         {
-            var users = repository.GetByDateRange(from, to);
+            List<User> users;
+            try
+            {
+                users = repository.GetByDateRange(from, to);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Ошибка при получении пользователей за период {From} - {To}", from, to);
+                return "[]";
+            }
+
+            Log.Information("Запрошен список пользователей за период {From} - {To}, найдено {Count}", from, to, users.Count);
 
             var options = new JsonSerializerOptions();
             options.WriteIndented = true;

@@ -93,3 +93,5 @@ StyleCopReport.xml
 *.ipr
 *.iws
 out/
+# Logs
+logs/

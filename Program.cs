@@ -1,7 +1,8 @@
 ﻿using System;
-using Microsoft.EntityFrameworkCore;
+using Serilog;
 using UserAuthApp.Controllers;
 using UserAuthApp.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace UserAuthApp
 {
@@ -9,10 +10,18 @@ namespace UserAuthApp
     {
         static void Main(string[] args)
         {
-             using (var context = new AppDbContext())
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.Console()
+                .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
+                .CreateLogger();
+
+            Log.Information("Приложение запущено");
+
+            using (var context = new AppDbContext())
             {
                 context.Database.Migrate();
             }
+
             var controller = new UserController();
             var exit = false;
 
@@ -31,34 +40,46 @@ namespace UserAuthApp
 
                 var choice = Console.ReadLine();
 
-                switch (choice)
+                try
                 {
-                    case "1":
-                        controller.CreateUser();
-                        break;
-                    case "2":
-                        controller.Login();
-                        break;
-                    case "3":
-                        controller.EditUser();
-                        break;
-                    case "4":
-                        controller.DeleteUser();
-                        break;
-                    case "5":
-                        controller.ShowUsers();
-                        break;
-                    case "6":
-                        controller.ShowUsersJson();
-                        break;
-                    case "0":
-                        exit = true;
-                        break;
-                    default:
-                        Console.WriteLine("Неверный пункт меню.");
-                        break;
+                    switch (choice)
+                    {
+                        case "1":
+                            controller.CreateUser();
+                            break;
+                        case "2":
+                            controller.Login();
+                            break;
+                        case "3":
+                            controller.EditUser();
+                            break;
+                        case "4":
+                            controller.DeleteUser();
+                            break;
+                        case "5":
+                            controller.ShowUsers();
+                            break;
+                        case "6":
+                            controller.ShowUsersJson();
+                            break;
+                        case "0":
+                            exit = true;
+                            break;
+                        default:
+                            Log.Warning("Выбран несуществующий пункт меню: {Choice}", choice);
+                            Console.WriteLine("Неверный пункт меню.");
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Непредвиденная ошибка при выполнении пункта меню {Choice}", choice);
+                    Console.WriteLine("Произошла непредвиденная ошибка.");
                 }
             }
+
+            Log.Information("Приложение завершило работу");
+            Log.CloseAndFlush();
         }
     }
 }
