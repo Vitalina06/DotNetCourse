@@ -1,8 +1,6 @@
 ﻿using System;
 using Serilog;
 using UserAuthApp.Controllers;
-using UserAuthApp.Data;
-using Microsoft.EntityFrameworkCore;
 
 namespace UserAuthApp
 {
@@ -16,11 +14,6 @@ namespace UserAuthApp
                 .CreateLogger();
 
             Log.Information("Приложение запущено");
-
-            using (var context = new AppDbContext())
-            {
-                context.Database.Migrate();
-            }
 
             var controller = new UserController();
             var exit = false;

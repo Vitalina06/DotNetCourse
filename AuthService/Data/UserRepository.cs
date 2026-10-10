@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UserAuthApp.Models;
+using AuthService.Models;
 
-namespace UserAuthApp.Data
+namespace AuthService.Data
 {
     class UserRepository
     {

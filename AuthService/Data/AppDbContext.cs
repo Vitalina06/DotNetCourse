@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using UserAuthApp.Models;
+using AuthService.Models;
 
-namespace UserAuthApp.Data
+namespace AuthService.Data
 {
     class AppDbContext : DbContext
     {
@@ -21,8 +21,8 @@ namespace UserAuthApp.Data
                 entity.Property(u => u.Id).HasColumnName("id");
                 entity.Property(u => u.Login).HasColumnName("login").IsRequired().HasMaxLength(50);
                 entity.Property(u => u.PasswordHash).HasColumnName("password_hash").IsRequired().HasMaxLength(100);
-                entity.Property(u => u.CreatedDate).HasColumnName("created_date");
-                entity.Property(u => u.UpdatedDate).HasColumnName("updated_date");
+                entity.Property(u => u.CreatedDate).HasColumnName("created_date").HasColumnType("timestamp without time zone");
+                entity.Property(u => u.UpdatedDate).HasColumnName("updated_date").HasColumnType("timestamp without time zone");
                 entity.HasIndex(u => u.Login).IsUnique();
             });
         }

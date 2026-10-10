@@ -4,10 +4,10 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Serilog;
-using UserAuthApp.Data;
-using UserAuthApp.Models;
+using AuthService.Data;
+using AuthService.Models;
 
-namespace UserAuthApp.Services
+namespace AuthService.Services
 {
     class UserService
     {
