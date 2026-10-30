@@ -12,6 +12,7 @@ namespace AuthService.Services
     class UserService
     {
         private UserRepository repository = new UserRepository();
+        private RedisCache cache = new RedisCache();
 
         public string Register(string login, string password)
         {
@@ -151,7 +152,8 @@ namespace AuthService.Services
                 return "Произошла ошибка. Попробуйте позже.";
             }
 
-            Log.Information("Данные пользователя обновлены: {Login}", login);
+            cache.Remove("user:" + login);
+            Log.Information("Данные пользователя обновлены: {Login}, кэш карточки сброшен", login);
 
             return null;
         }
@@ -185,9 +187,44 @@ namespace AuthService.Services
                 return "Произошла ошибка. Попробуйте позже.";
             }
 
-            Log.Information("Пользователь удалён: {Login}", login);
+            cache.Remove("user:" + login);
+            Log.Information("Пользователь удалён: {Login}, кэш карточки сброшен", login);
 
             return null;
+        }
+
+        public User GetUserCard(string login)
+        {
+            var key = "user:" + login;
+
+            var cached = cache.Get(key);
+            if (cached != null)
+            {
+                Log.Information("Карточка пользователя {Login} получена из Redis", login);
+                return JsonSerializer.Deserialize<User>(cached);
+            }
+
+            User user;
+            try
+            {
+                user = repository.GetByLogin(login);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Ошибка при получении карточки пользователя {Login}", login);
+                return null;
+            }
+
+            if (user == null)
+            {
+                Log.Warning("Запрошена карточка несуществующего пользователя: {Login}", login);
+                return null;
+            }
+
+            cache.Set(key, JsonSerializer.Serialize(user), TimeSpan.FromMinutes(5));
+            Log.Information("Карточка пользователя {Login} получена из PostgreSQL и сохранена в Redis", login);
+
+            return user;
         }
 
         public List<User> GetAll()

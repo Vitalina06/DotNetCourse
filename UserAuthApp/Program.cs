@@ -28,6 +28,7 @@ namespace UserAuthApp
                 Console.WriteLine("4. Удалить пользователя");
                 Console.WriteLine("5. Показать всех пользователей");
                 Console.WriteLine("6. Показать пользователей в JSON за период");
+                Console.WriteLine("7. Показать карточку пользователя");
                 Console.WriteLine("0. Выход");
                 Console.Write("Выберите пункт: ");
 
@@ -54,6 +55,9 @@ namespace UserAuthApp
                             break;
                         case "6":
                             controller.ShowUsersJson();
+                            break;
+                        case "7":
+                            controller.ShowUserCard();
                             break;
                         case "0":
                             exit = true;

@@ -70,6 +70,19 @@ namespace AuthService.Controllers
             return Ok(users);
         }
 
+                [HttpGet("card/{login}")]
+        public IActionResult GetCard(string login)
+        {
+            var user = userService.GetUserCard(login);
+
+            if (user == null)
+            {
+                return NotFound("Пользователь не найден.");
+            }
+
+            return Ok(user);
+        }
+
         [HttpGet("json")]
         public IActionResult GetJson(DateTime from, DateTime to)
         {

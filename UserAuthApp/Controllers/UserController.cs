@@ -104,6 +104,25 @@ namespace UserAuthApp.Controllers
             }
         }
 
+        public void ShowUserCard()
+        {
+            Console.Write("Введите логин пользователя: ");
+            var login = Console.ReadLine();
+
+            var user = userService.GetCard(login);
+
+            if (user == null)
+            {
+                Console.WriteLine("Пользователь не найден.");
+                return;
+            }
+
+            Console.WriteLine("Id: " + user.Id);
+            Console.WriteLine("Логин: " + user.Login);
+            Console.WriteLine("Создан: " + user.CreatedDate);
+            Console.WriteLine("Обновлён: " + user.UpdatedDate);
+        }
+
         public void ShowUsersJson()
         {
             Console.Write("Введите дату начала периода (гггг-мм-дд): ");

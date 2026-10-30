@@ -127,6 +127,31 @@ namespace UserAuthApp.Services
             }
         }
 
+        public User GetCard(string login)
+        {
+            if (string.IsNullOrWhiteSpace(login))
+            {
+                return null;
+            }
+
+            try
+            {
+                var response = client.GetAsync("api/users/card/" + Uri.EscapeDataString(login)).Result;
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return null;
+                }
+
+                return response.Content.ReadFromJsonAsync<User>().Result;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Не удалось обратиться к AuthService при получении карточки");
+                return null;
+            }
+        }
+
         public string GetUsersJson(DateTime from, DateTime to)
         {
             try
