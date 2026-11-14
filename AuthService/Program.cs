@@ -1,4 +1,6 @@
+using AuthService;
 using AuthService.Data;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -12,6 +14,18 @@ builder.Services.AddControllers();
 
 var app = builder.Build();
 
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        var feature = context.Features.Get<IExceptionHandlerFeature>();
+        Log.Error(feature?.Error, "Необработанная ошибка при запросе {Path}", context.Request.Path);
+
+        context.Response.StatusCode = 500;
+        await context.Response.WriteAsync("Произошла ошибка. Попробуйте позже.");
+    });
+});
+
 using (var context = new AppDbContext())
 {
     context.Database.Migrate();
@@ -20,4 +34,4 @@ using (var context = new AppDbContext())
 Log.Information("AuthService запущен");
 
 app.MapControllers();
-app.Run("http://localhost:5100");
+app.Run(Config.Settings["ListenUrl"]);

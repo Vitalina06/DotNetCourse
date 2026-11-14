@@ -29,6 +29,7 @@ namespace UserAuthApp
                 Console.WriteLine("5. Показать всех пользователей");
                 Console.WriteLine("6. Показать пользователей в JSON за период");
                 Console.WriteLine("7. Показать карточку пользователя");
+                Console.WriteLine("8. Задать вопрос ИИ");
                 Console.WriteLine("0. Выход");
                 Console.Write("Выберите пункт: ");
 
@@ -59,6 +60,9 @@ namespace UserAuthApp
                         case "7":
                             controller.ShowUserCard();
                             break;
+                        case "8":
+                            controller.AskAi();
+                            break;
                         case "0":
                             exit = true;
                             break;
@@ -70,8 +74,8 @@ namespace UserAuthApp
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex, "Непредвиденная ошибка при выполнении пункта меню {Choice}", choice);
-                    Console.WriteLine("Произошла непредвиденная ошибка.");
+                    Log.Error(ex, "Ошибка при выполнении пункта меню {Choice}", choice);
+                    Console.WriteLine("Не удалось выполнить действие. Проверьте, что AuthService запущен.");
                 }
             }
 

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using AuthService.Models;
 
 namespace AuthService.Data
@@ -9,7 +10,7 @@ namespace AuthService.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=userauthdb;Username=postgres;Password=postgres");
+            optionsBuilder.UseNpgsql(Config.Settings.GetConnectionString("Postgres"));
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

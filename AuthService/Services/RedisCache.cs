@@ -1,58 +1,36 @@
 using System;
-using Serilog;
+using Microsoft.Extensions.Configuration;
 using StackExchange.Redis;
 
 namespace AuthService.Services
 {
     class RedisCache
     {
-        private static ConnectionMultiplexer connection = ConnectionMultiplexer.Connect("localhost:6379,abortConnect=false");
+        private static ConnectionMultiplexer connection = ConnectionMultiplexer.Connect(Config.Settings.GetConnectionString("Redis"));
 
         public string Get(string key)
         {
-            try
-            {
-                var db = connection.GetDatabase();
-                var value = db.StringGet(key);
+            var db = connection.GetDatabase();
+            var value = db.StringGet(key);
 
-                if (value.IsNullOrEmpty)
-                {
-                    return null;
-                }
-
-                return value.ToString();
-            }
-            catch (Exception ex)
+            if (value.IsNullOrEmpty)
             {
-                Log.Warning(ex, "Redis недоступен при чтении ключа {Key}", key);
                 return null;
             }
+
+            return value.ToString();
         }
 
         public void Set(string key, string value, TimeSpan lifetime)
         {
-            try
-            {
-                var db = connection.GetDatabase();
-                db.StringSet(key, value, lifetime);
-            }
-            catch (Exception ex)
-            {
-                Log.Warning(ex, "Redis недоступен при записи ключа {Key}", key);
-            }
+            var db = connection.GetDatabase();
+            db.StringSet(key, value, lifetime);
         }
 
         public void Remove(string key)
         {
-            try
-            {
-                var db = connection.GetDatabase();
-                db.KeyDelete(key);
-            }
-            catch (Exception ex)
-            {
-                Log.Warning(ex, "Redis недоступен при удалении ключа {Key}", key);
-            }
+            var db = connection.GetDatabase();
+            db.KeyDelete(key);
         }
     }
 }

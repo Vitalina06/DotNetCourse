@@ -30,17 +30,7 @@ namespace AuthService.Services
                 return error;
             }
 
-            User existingUser;
-            try
-            {
-                existingUser = repository.GetByLogin(login);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Ошибка при обращении к базе данных при регистрации пользователя {Login}", login);
-                return "Произошла ошибка. Попробуйте позже.";
-            }
-
+            var existingUser = repository.GetByLogin(login);
             if (existingUser != null)
             {
                 Log.Warning("Попытка регистрации с уже существующим логином: {Login}", login);
@@ -53,15 +43,7 @@ namespace AuthService.Services
             user.CreatedDate = DateTime.Now;
             user.UpdatedDate = DateTime.Now;
 
-            try
-            {
-                repository.Add(user);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Ошибка при сохранении нового пользователя {Login}", login);
-                return "Произошла ошибка. Попробуйте позже.";
-            }
+            repository.Add(user);
 
             Log.Information("Зарегистрирован новый пользователь: {Login}", login);
 
@@ -70,16 +52,7 @@ namespace AuthService.Services
 
         public bool Login(string login, string password)
         {
-            User user;
-            try
-            {
-                user = repository.GetByLogin(login);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Ошибка при обращении к базе данных при авторизации {Login}", login);
-                return false;
-            }
+            var user = repository.GetByLogin(login);
 
             if (user == null)
             {
@@ -99,16 +72,7 @@ namespace AuthService.Services
 
         public string Edit(string login, string newLogin, string newPassword)
         {
-            User user;
-            try
-            {
-                user = repository.GetByLogin(login);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Ошибка при обращении к базе данных при редактировании {Login}", login);
-                return "Произошла ошибка. Попробуйте позже.";
-            }
+            var user = repository.GetByLogin(login);
 
             if (user == null)
             {
@@ -141,16 +105,7 @@ namespace AuthService.Services
             }
 
             user.UpdatedDate = DateTime.Now;
-
-            try
-            {
-                repository.Update(user);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Ошибка при сохранении изменений пользователя {Login}", login);
-                return "Произошла ошибка. Попробуйте позже.";
-            }
+            repository.Update(user);
 
             cache.Remove("user:" + login);
             Log.Information("Данные пользователя обновлены: {Login}, кэш карточки сброшен", login);
@@ -160,16 +115,7 @@ namespace AuthService.Services
 
         public string Delete(string login)
         {
-            User user;
-            try
-            {
-                user = repository.GetByLogin(login);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Ошибка при обращении к базе данных при удалении {Login}", login);
-                return "Произошла ошибка. Попробуйте позже.";
-            }
+            var user = repository.GetByLogin(login);
 
             if (user == null)
             {
@@ -177,15 +123,7 @@ namespace AuthService.Services
                 return "Пользователь не найден.";
             }
 
-            try
-            {
-                repository.Delete(user.Id);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Ошибка при удалении пользователя {Login}", login);
-                return "Произошла ошибка. Попробуйте позже.";
-            }
+            repository.Delete(user.Id);
 
             cache.Remove("user:" + login);
             Log.Information("Пользователь удалён: {Login}, кэш карточки сброшен", login);
@@ -204,16 +142,7 @@ namespace AuthService.Services
                 return JsonSerializer.Deserialize<User>(cached);
             }
 
-            User user;
-            try
-            {
-                user = repository.GetByLogin(login);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Ошибка при получении карточки пользователя {Login}", login);
-                return null;
-            }
+            var user = repository.GetByLogin(login);
 
             if (user == null)
             {
@@ -229,29 +158,12 @@ namespace AuthService.Services
 
         public List<User> GetAll()
         {
-            try
-            {
-                return repository.GetAll();
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Ошибка при получении списка пользователей");
-                return new List<User>();
-            }
+            return repository.GetAll();
         }
 
         public string GetUsersJson(DateTime from, DateTime to)
         {
-            List<User> users;
-            try
-            {
-                users = repository.GetByDateRange(from, to);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Ошибка при получении пользователей за период {From} - {To}", from, to);
-                return "[]";
-            }
+            var users = repository.GetByDateRange(from, to);
 
             Log.Information("Запрошен список пользователей за период {From} - {To}, найдено {Count}", from, to, users.Count);
 

@@ -131,10 +131,7 @@ namespace UserAuthApp.Controllers
             Console.Write("Введите дату конца периода (гггг-мм-дд): ");
             var toInput = Console.ReadLine();
 
-            DateTime from;
-            DateTime to;
-
-            if (!DateTime.TryParse(fromInput, out from) || !DateTime.TryParse(toInput, out to))
+            if (!DateTime.TryParse(fromInput, out var from) || !DateTime.TryParse(toInput, out var to))
             {
                 Console.WriteLine("Некорректный формат даты.");
                 return;
@@ -142,6 +139,17 @@ namespace UserAuthApp.Controllers
 
             var json = userService.GetUsersJson(from, to.AddDays(1).AddSeconds(-1));
             Console.WriteLine(json);
+        }
+
+        public void AskAi()
+        {
+            Console.Write("Введите вопрос: ");
+            var question = Console.ReadLine();
+
+            Console.WriteLine("Ждём ответ ИИ...");
+            var answer = userService.AskAi(question);
+
+            Console.WriteLine(answer);
         }
     }
 }
