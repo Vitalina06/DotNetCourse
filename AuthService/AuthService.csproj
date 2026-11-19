@@ -22,5 +22,9 @@
   <ItemGroup>
     <Content Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="AuthService.Tests" />
+  </ItemGroup>
   
 </Project>

@@ -4,7 +4,7 @@ using StackExchange.Redis;
 
 namespace AuthService.Services
 {
-    class RedisCache
+    class RedisCache : ICache
     {
         private static ConnectionMultiplexer connection = ConnectionMultiplexer.Connect(Config.Settings.GetConnectionString("Redis"));
 

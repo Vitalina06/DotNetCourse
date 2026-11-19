@@ -11,8 +11,18 @@ namespace AuthService.Services
 {
     class UserService
     {
-        private UserRepository repository = new UserRepository();
-        private RedisCache cache = new RedisCache();
+        private IUserRepository repository;
+        private ICache cache;
+
+        public UserService() : this(new UserRepository(), new RedisCache())
+        {
+        }
+
+        public UserService(IUserRepository repository, ICache cache)
+        {
+            this.repository = repository;
+            this.cache = cache;
+        }
 
         public string Register(string login, string password)
         {

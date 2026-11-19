@@ -5,7 +5,7 @@ using AuthService.Models;
 
 namespace AuthService.Data
 {
-    class UserRepository
+    class UserRepository : IUserRepository
     {
         public void Add(User user)
         {
