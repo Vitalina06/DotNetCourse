@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using AuthService.Models;
 using AuthService.Services;
 
 namespace AuthService.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/ai")]
     public class AiController : ControllerBase

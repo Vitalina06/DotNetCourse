@@ -1,5 +1,6 @@
 using AuthService;
 using AuthService.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -11,6 +12,15 @@ Log.Logger = new LoggerConfiguration()
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = Config.Settings["Keycloak:Authority"];
+        options.RequireHttpsMetadata = false;
+        options.TokenValidationParameters.ValidateAudience = false;
+    });
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
@@ -32,6 +42,9 @@ using (var context = new AppDbContext())
 }
 
 Log.Information("AuthService запущен");
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 app.Run(Config.Settings["ListenUrl"]);

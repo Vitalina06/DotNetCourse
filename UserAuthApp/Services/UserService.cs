@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using UserAuthApp.Models;
 
@@ -16,6 +18,34 @@ namespace UserAuthApp.Services
             client.BaseAddress = new Uri(Config.Settings["AuthServiceUrl"]);
             client.Timeout = TimeSpan.FromMinutes(5);
         }
+
+        
+        // Keycloak
+
+        public bool LoginKeycloak(string login, string password)
+        {
+            client.DefaultRequestHeaders.Authorization = null;
+
+            var form = new Dictionary<string, string>();
+            form["grant_type"] = "password";
+            form["client_id"] = Config.Settings["Keycloak:ClientId"];
+            form["username"] = login;
+            form["password"] = password;
+
+            var response = client.PostAsync(Config.Settings["Keycloak:TokenUrl"], new FormUrlEncodedContent(form)).Result;
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
+
+            var token = response.Content.ReadFromJsonAsync<TokenResponse>().Result;
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
+
+            return true;
+        }
+
+        // Открытые методы (токен не нужен)
 
         public string Register(string login, string password)
         {
@@ -38,6 +68,8 @@ namespace UserAuthApp.Services
             return response.IsSuccessStatusCode;
         }
 
+        // Защищённые методы (нужен токен Keycloak) 
+
         public string Edit(string login, string newLogin, string newPassword)
         {
             if (string.IsNullOrWhiteSpace(login))
@@ -47,6 +79,7 @@ namespace UserAuthApp.Services
 
             var body = new { NewLogin = newLogin, NewPassword = newPassword };
             var response = client.PutAsJsonAsync("api/users/" + Uri.EscapeDataString(login), body).Result;
+            CheckAccess(response);
 
             if (response.IsSuccessStatusCode)
             {
@@ -64,6 +97,7 @@ namespace UserAuthApp.Services
             }
 
             var response = client.DeleteAsync("api/users/" + Uri.EscapeDataString(login)).Result;
+            CheckAccess(response);
 
             if (response.IsSuccessStatusCode)
             {
@@ -76,6 +110,7 @@ namespace UserAuthApp.Services
         public List<User> GetAll()
         {
             var response = client.GetAsync("api/users").Result;
+            CheckAccess(response);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -93,6 +128,7 @@ namespace UserAuthApp.Services
             }
 
             var response = client.GetAsync("api/users/card/" + Uri.EscapeDataString(login)).Result;
+            CheckAccess(response);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -111,6 +147,7 @@ namespace UserAuthApp.Services
                 "&to=" + Uri.EscapeDataString(toText);
 
             var response = client.GetAsync(url).Result;
+            CheckAccess(response);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -124,8 +161,17 @@ namespace UserAuthApp.Services
         {
             var body = new { Question = question };
             var response = client.PostAsJsonAsync("api/ai/ask", body).Result;
+            CheckAccess(response);
 
             return response.Content.ReadAsStringAsync().Result;
+        }
+
+        private void CheckAccess(HttpResponseMessage response)
+        {
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                throw new HttpRequestException("Требуется вход через Keycloak", null, HttpStatusCode.Unauthorized);
+            }
         }
     }
 }

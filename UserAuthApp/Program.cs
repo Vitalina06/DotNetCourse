@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Net;
+using System.Net.Http;
 using Serilog;
 using UserAuthApp.Controllers;
 
@@ -30,6 +32,7 @@ namespace UserAuthApp
                 Console.WriteLine("6. Показать пользователей в JSON за период");
                 Console.WriteLine("7. Показать карточку пользователя");
                 Console.WriteLine("8. Задать вопрос ИИ");
+                Console.WriteLine("9. Войти в систему управления (Keycloak)");
                 Console.WriteLine("0. Выход");
                 Console.Write("Выберите пункт: ");
 
@@ -63,6 +66,9 @@ namespace UserAuthApp
                         case "8":
                             controller.AskAi();
                             break;
+                        case "9":
+                            controller.LoginKeycloak();
+                            break;
                         case "0":
                             exit = true;
                             break;
@@ -71,6 +77,11 @@ namespace UserAuthApp
                             Console.WriteLine("Неверный пункт меню.");
                             break;
                     }
+                }
+                catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    Log.Warning("Защищённая операция без входа или с просроченным токеном, пункт меню {Choice}", choice);
+                    Console.WriteLine("Нужно войти в систему управления (пункт 9). Возможно, сессия истекла.");
                 }
                 catch (Exception ex)
                 {

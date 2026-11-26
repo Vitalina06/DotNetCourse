@@ -1,0 +1,32 @@
+{
+  "realm": "userauth",
+  "enabled": true,
+  "sslRequired": "none",
+  "accessTokenLifespan": 1800,
+  "clients": [
+    {
+      "clientId": "console-client",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": false
+    }
+  ],
+  "users": [
+    {
+      "username": "operator",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "operator@userauth.local",
+      "firstName": "Operator",
+      "lastName": "Operator",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "operator123",
+          "temporary": false
+        }
+      ]
+    }
+  ]
+}

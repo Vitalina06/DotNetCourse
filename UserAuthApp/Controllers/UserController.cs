@@ -151,5 +151,25 @@ namespace UserAuthApp.Controllers
 
             Console.WriteLine(answer);
         }
+
+        public void LoginKeycloak()
+        {
+            Console.Write("Логин оператора: ");
+            var login = Console.ReadLine();
+
+            Console.Write("Пароль: ");
+            var password = Console.ReadLine();
+
+            var success = userService.LoginKeycloak(login, password);
+
+            if (success)
+            {
+                Console.WriteLine("Вход выполнен. Теперь доступны операции управления.");
+            }
+            else
+            {
+                Console.WriteLine("Неверный логин или пароль Keycloak.");
+            }
+        }
     }
 }

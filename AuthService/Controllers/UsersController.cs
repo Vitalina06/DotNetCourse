@@ -1,4 +1,5 @@
 using System;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using AuthService.Models;
 using AuthService.Services;
@@ -37,6 +38,7 @@ namespace AuthService.Controllers
             return Ok("Авторизация успешна.");
         }
 
+        [Authorize]
         [HttpPut("{login}")]
         public IActionResult Edit(string login, EditRequest request)
         {
@@ -50,6 +52,7 @@ namespace AuthService.Controllers
             return Ok("Данные пользователя обновлены.");
         }
 
+        [Authorize]
         [HttpDelete("{login}")]
         public IActionResult Delete(string login)
         {
@@ -63,6 +66,7 @@ namespace AuthService.Controllers
             return Ok("Пользователь удалён.");
         }
 
+        [Authorize]
         [HttpGet]
         public IActionResult GetAll()
         {
@@ -70,7 +74,8 @@ namespace AuthService.Controllers
             return Ok(users);
         }
 
-                [HttpGet("card/{login}")]
+        [Authorize]
+        [HttpGet("card/{login}")]
         public IActionResult GetCard(string login)
         {
             var user = userService.GetUserCard(login);
@@ -83,6 +88,7 @@ namespace AuthService.Controllers
             return Ok(user);
         }
 
+        [Authorize]
         [HttpGet("json")]
         public IActionResult GetJson(DateTime from, DateTime to)
         {
